@@ -1,0 +1,21 @@
+{
+  "pdf_folder": "C:\\Users\\manis\\Downloads\\cloverrag",
+  "index_path": "realestate_index",
+  "tracking_file": "indexed_documents.txt",
+  "ocr_settings": {
+    "dpi": 200,
+    "batch_size": 10,
+    "language": "mr"
+  },
+  "rag_settings": {
+    "chunk_size": 400,
+    "chunk_overlap": 50,
+    "top_k": 5
+  },
+  "llm_settings": {
+    "gemini_api_key": "AIzaSyDL1Jtci_Wq7AT9fRjq89mS6ZPPoe_WhDs",
+    "model": "gemini-2.5-flash",
+    "temperature": 0.3,
+    "max_tokens": 500
+  }
+}

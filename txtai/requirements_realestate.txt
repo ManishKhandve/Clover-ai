@@ -1,0 +1,24 @@
+# Real Estate Agreement RAG System - Additional Requirements
+
+# Core txtai (already installed)
+# txtai>=9.2.0
+
+# OCR Dependencies (PaddleOCR)
+paddleocr>=2.7.0
+pdf2image>=1.16.3
+opencv-python>=4.8.0
+Pillow>=10.0.0
+
+# Multilingual sentence transformers
+sentence-transformers>=2.2.0
+
+# Note: You'll also need poppler-utils for pdf2image
+# Windows: Download from https://github.com/oschwartz10612/poppler-windows/releases
+# Linux: sudo apt-get install poppler-utils
+# macOS: brew install poppler
+
+# Gemini Integration
+google-generativeai>=0.3.0
+
+# PDF Report Generation
+reportlab>=4.0.0

@@ -1,0 +1,21 @@
+{
+  "path": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+  "content": true,
+  "backend": "faiss",
+  "faiss": {
+    "quantize": false,
+    "sample": 0.05
+  },
+  "dimensions": 768,
+  "offset": 183,
+  "build": {
+    "create": "2025-12-18T07:52:34Z",
+    "python": "3.11.9",
+    "settings": {
+      "components": "IDMap,SQ8"
+    },
+    "system": "Windows (AMD64)",
+    "txtai": "9.2.0"
+  },
+  "update": "2025-12-18T07:52:34Z"
+}

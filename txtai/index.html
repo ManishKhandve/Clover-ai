@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Agreement Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <h1>CloverAI</h1>
+            </div>
+            <div class="header-center">
+                <div class="api-usage-panel" id="apiUsagePanel" title="Click to view details">
+                    <div class="usage-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20V10"></path>
+                            <path d="M18 20V4"></path>
+                            <path d="M6 20v-4"></path>
+                        </svg>
+                    </div>
+                    <div class="usage-stats">
+                        <span class="usage-label">API Calls:</span>
+                        <span class="usage-value" id="apiCallCount">0</span>
+                        <span class="usage-separator">|</span>
+                        <span class="usage-label">Tokens:</span>
+                        <span class="usage-value" id="apiTokenCount">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="status">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span class="status-text" id="statusText">Connecting...</span>
+            </div>
+        </header>
+        
+        <!-- API Usage Modal -->
+        <div class="modal" id="apiUsageModal">
+            <div class="modal-content usage-modal">
+                <div class="modal-header">
+                    <h2>API Usage Statistics</h2>
+                    <button class="modal-close" id="closeUsageModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="usage-grid">
+                        <div class="usage-card">
+                            <div class="usage-card-icon requests">REQ</div>
+                            <div class="usage-card-content">
+                                <div class="usage-card-value" id="modalTotalRequests">0</div>
+                                <div class="usage-card-label">Total Requests</div>
+                            </div>
+                        </div>
+                        <div class="usage-card">
+                            <div class="usage-card-icon success">OK</div>
+                            <div class="usage-card-content">
+                                <div class="usage-card-value" id="modalSuccessRequests">0</div>
+                                <div class="usage-card-label">Successful</div>
+                            </div>
+                        </div>
+                        <div class="usage-card">
+                            <div class="usage-card-icon failed">X</div>
+                            <div class="usage-card-content">
+                                <div class="usage-card-value" id="modalFailedRequests">0</div>
+                                <div class="usage-card-label">Failed</div>
+                            </div>
+                        </div>
+                        <div class="usage-card">
+                            <div class="usage-card-icon tokens">IN</div>
+                            <div class="usage-card-content">
+                                <div class="usage-card-value" id="modalInputTokens">0</div>
+                                <div class="usage-card-label">Input Tokens (est.)</div>
+                            </div>
+                        </div>
+                        <div class="usage-card">
+                            <div class="usage-card-icon tokens">T</div>
+                            <div class="usage-card-content">
+                                <div class="usage-card-value" id="modalOutputTokens">0</div>
+                                <div class="usage-card-label">Output Tokens (est.)</div>
+                            </div>
+                        </div>
+                        <div class="usage-card">
+                            <div class="usage-card-icon model">AI</div>
+                            <div class="usage-card-content">
+                                <div class="usage-card-value" id="modalModelName">-</div>
+                                <div class="usage-card-label">Model</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="usage-session-info">
+                        <span>Session started: <strong id="modalSessionStart">-</strong></span>
+                    </div>
+                    <div class="usage-actions">
+                        <button class="btn btn-secondary" id="resetUsageBtn">Reset Stats</button>
+                        <button class="btn btn-primary" id="refreshUsageBtn">Refresh</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Your Documents</h3>
+                    <div class="user-doc-controls">
+                        <label class="checkbox select-all-label">
+                            <input type="checkbox" id="selectAllUserDocs">
+                            <span>Select All</span>
+                        </label>
+                    </div>
+                    <div id="documentList" class="document-list">
+                        <p class="empty-state">No documents loaded</p>
+                    </div>
+                    <button class="btn btn-secondary" id="loadDocsBtn">
+                        <span>Refresh Documents</span>
+                    </button>
+                    <div class="info-note" style="margin-top: 10px; font-size: 0.85rem; color: #666; background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px solid #e9ecef;">
+                        <strong>Note:</strong> Place PDFs in the documents folder and restart to index.
+                    </div>
+                </div>
+
+                <div class="sidebar-section maharera-section">
+                    <h3>MahaRERA Regulations</h3>
+                    <div class="maharera-controls">
+                        <label class="checkbox select-all-label">
+                            <input type="checkbox" id="selectAllMaharera">
+                            <span>Select All</span>
+                        </label>
+                        <div class="btn-group">
+                            <button class="btn btn-compliance" id="checkComplianceBtn" disabled>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 11l3 3L22 4"></path>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                                Check
+                            </button>
+                            <button class="btn btn-batch" id="batchProcessBtn" disabled title="Analyze multiple documents at once">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="14" width="7" height="7"></rect>
+                                    <rect x="3" y="14" width="7" height="7"></rect>
+                                </svg>
+                                Batch
+                            </button>
+                        </div>
+                    </div>
+                    <div id="mahareraList" class="document-list maharera-list">
+                        <p class="empty-state">No regulations loaded</p>
+                    </div>
+                    <div class="maharera-buttons">
+                        <button class="btn btn-maharera-delete" id="deleteMahareraBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            <span>Delete All</span>
+                        </button>
+                    </div>
+                    <div class="info-note maharera-note" style="margin-top: 10px; font-size: 0.85rem; color: #1e40af; background: #eff6ff; padding: 8px; border-radius: 4px; border: 1px solid #bfdbfe;">
+                        <strong>Source:</strong> Official circulars, rules & regulations from maharera.maharashtra.gov.in
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Settings</h3>
+                    <div class="settings">
+                        <label>
+                            Language
+                            <select id="languageSelect">
+                                <option value="auto">Auto Detect</option>
+                                <option value="english">English</option>
+                                <option value="marathi">Marathi</option>
+                            </select>
+                        </label>
+                        <label>
+                            Results
+                            <input type="number" id="topKInput" min="1" max="10" value="3">
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="showSourcesCheck" checked>
+                            <span>Show sources</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Sample Questions</h3>
+                    <div class="sample-questions">
+                        <button class="sample-btn" data-question="What is the property address?">
+                            Property address
+                        </button>
+                        <button class="sample-btn" data-question="What is the total sale price?">
+                            Sale price
+                        </button>
+                        <button class="sample-btn" data-question="When is the possession date?">
+                            Possession date
+                        </button>
+                        <button class="sample-btn" data-question="What are the payment terms?">
+                            Payment terms
+                        </button>
+                        <button class="sample-btn" data-question="What is the property address?">
+                            Address (Marathi)
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <main class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="welcome-message">
+                        <h2>Welcome to Real Estate Assistant</h2>
+                        <p>Ask me anything about your real estate agreements in English or Marathi</p>
+                        <div class="features">
+                            <div class="feature">
+                                <span class="feature-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                </span>
+                                <span>Semantic Search</span>
+                            </div>
+                            <div class="feature">
+                                <span class="feature-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12L2.1 12.1"></path><path d="M12 12l-8.9-5.2"></path></svg>
+                                </span>
+                                <span>AI-Powered Answers</span>
+                            </div>
+                            <div class="feature">
+                                <span class="feature-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                </span>
+                                <span>Multilingual Support</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Ask a question about your documents..."
+                            rows="1"
+                        ></textarea>
+                        <button class="send-btn" id="sendBtn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-hint">
+                        Press Enter to send, Shift+Enter for new line
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Batch Processing Modal -->
+    <div id="batchModal" class="modal">
+        <div class="modal-content batch-modal">
+            <div class="modal-header">
+                <h2>Batch Compliance Processing</h2>
+                <button class="modal-close" id="closeBatchModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="batch-info">
+                    <p>Analyze multiple documents at once and generate a consolidated compliance report.</p>
+                </div>
+                <div class="batch-documents">
+                    <h4>Select Documents to Process:</h4>
+                    <div id="batchDocList" class="batch-doc-list"></div>
+                </div>
+                <div class="batch-options">
+                    <h4>Processing Options:</h4>
+                    <label class="checkbox">
+                        <input type="checkbox" id="batchRedFlags" checked>
+                        <span>Detect Red Flags</span>
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="batchCompliance" checked>
+                        <span>Verify Required Clauses</span>
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="batchGeneratePdf" checked>
+                        <span>Generate PDF Report</span>
+                    </label>
+                </div>
+                <div class="batch-progress" id="batchProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="batchProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="batchProgressText">Processing...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBatchBtn">Cancel</button>
+                <button class="btn btn-primary" id="startBatchBtn">Start Batch Processing</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
