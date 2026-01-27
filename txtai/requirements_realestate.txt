@@ -1,4 +1,4 @@
-# Real Estate Agreement RAG System - Additional Requirements
+# Real Estate Agreement RAG System - Requirements
 
 # Core txtai (already installed)
 # txtai>=9.2.0
@@ -22,3 +22,22 @@ google-generativeai>=0.3.0
 
 # PDF Report Generation
 reportlab>=4.0.0
+
+# =============================================================================
+# PRODUCTION DEPENDENCIES
+# =============================================================================
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Rate limiting
+flask-limiter>=3.0.0
+
+# Production WSGI server
+gunicorn>=21.0.0
+
+# Process monitoring
+psutil>=5.9.0
+
+# Redis (optional - for distributed rate limiting)
+# redis>=4.0.0

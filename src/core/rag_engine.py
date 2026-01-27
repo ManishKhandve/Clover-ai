@@ -19,7 +19,7 @@ class RealEstateRAG:
         Args:
             model_name: Hugging Face model for embeddings
                       Default supports 50+ languages including English and Marathi
-            use_llm: Whether to use Llama 3 for answer generation
+            use_llm: Whether to use Gemini for answer generation
         """
         print("Initializing Real Estate RAG System...")
         
@@ -53,9 +53,9 @@ class RealEstateRAG:
         if use_llm:
             llm_settings = self.config.get("llm_settings", {})
             
-            # API key priority: environment variable > config.json
-            api_key = os.environ.get("GEMINI_API_KEY") or llm_settings.get("gemini_api_key")
-            model = llm_settings.get("model", "gemini-2.5-flash")
+            # Default to Gemini
+            api_key = llm_settings.get("gemini_api_key")
+            model = llm_settings.get("model", "gemini-1.5-flash")
             
             if api_key:
                 self.llm = GeminiLLM(api_key, model)
@@ -65,7 +65,7 @@ class RealEstateRAG:
                     print("WARNING: Gemini not available, falling back to simple synthesis")
                     self.llm = None
             else:
-                print("WARNING: No Gemini API key found. Set GEMINI_API_KEY env var or add to config.json")
+                print("WARNING: No Gemini API key found in config.json")
                 self.llm = None
     
     def delete_document(self, filename: str) -> bool:
@@ -442,7 +442,7 @@ class RealEstateRAG:
             print(f"   Running compliance check (explicit: {compliance_check}, query-triggered: {is_red_flag_query})...")
             try:
                 from .red_flag_detector import detect_red_flags, check_compliance, get_compliance_summary
-            except Exception:
+            except ImportError:
                 from red_flag_detector import detect_red_flags, check_compliance, get_compliance_summary  # fallback import
 
             # Separate user doc chunks from authority chunks (from search results)

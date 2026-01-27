@@ -8,3 +8,16 @@ __pycache__/
 .coverage.*
 *.pyc
 .vscode/
+
+# Environment variables (contains secrets)
+.env
+
+# Log files
+*.log
+
+# Index files (can be regenerated)
+realestate_index/
+maharera_index/
+
+# Extracted text cache
+extracted_text/

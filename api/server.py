@@ -1,89 +1,14 @@
 """
 Flask API Server for Real Estate RAG System
 Provides REST API endpoints for the web UI
-
-Production Features:
-- Rate limiting (flask-limiter)
-- API key authentication
-- HTTPS ready (use with gunicorn + nginx)
 """
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from functools import wraps
 import os
 import json
 
-# Load environment variables from .env file if available
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass  # python-dotenv not installed, use system env vars
-
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
-
-# =============================================================================
-# RATE LIMITING - Prevent API abuse
-# =============================================================================
-try:
-    from flask_limiter import Limiter
-    from flask_limiter.util import get_remote_address
-    
-    limiter = Limiter(
-        key_func=get_remote_address,
-        app=app,
-        default_limits=["200 per day", "50 per hour"],
-        storage_uri="memory://",  # Use Redis in production: "redis://localhost:6379"
-    )
-    RATE_LIMITING_ENABLED = True
-    print("[OK] Rate limiting enabled")
-except ImportError:
-    limiter = None
-    RATE_LIMITING_ENABLED = False
-    print("[WARN] flask-limiter not installed. Rate limiting disabled.")
-    print("       Install with: pip install flask-limiter")
-
-# =============================================================================
-# API KEY AUTHENTICATION
-# =============================================================================
-# Set API key via environment variable or config
-API_KEY = os.environ.get('RAG_API_KEY', '')
-API_AUTH_ENABLED = bool(API_KEY)
-
-if API_AUTH_ENABLED:
-    print(f"[OK] API authentication enabled")
-else:
-    print("[WARN] No API key set. Authentication disabled.")
-    print("       Set RAG_API_KEY environment variable for production.")
-
-def require_api_key(f):
-    """Decorator to require API key for protected endpoints"""
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not API_AUTH_ENABLED:
-            return f(*args, **kwargs)
-        
-        # Check for API key in header or query parameter
-        api_key = request.headers.get('X-API-Key') or request.args.get('api_key')
-        
-        if not api_key:
-            return jsonify({'error': 'API key required', 'code': 'AUTH_MISSING'}), 401
-        
-        if api_key != API_KEY:
-            return jsonify({'error': 'Invalid API key', 'code': 'AUTH_INVALID'}), 403
-        
-        return f(*args, **kwargs)
-    return decorated
-
-# Rate limit decorator helper
-def rate_limit(limit_string):
-    """Apply rate limit if flask-limiter is available"""
-    def decorator(f):
-        if limiter:
-            return limiter.limit(limit_string)(f)
-        return f
-    return decorator
 
 # Global RAG instance
 rag_system = None
@@ -111,7 +36,6 @@ def initialize_rag():
 
 
 @app.route('/api/status', methods=['GET'])
-@rate_limit("100 per minute")
 def get_status():
     """Get server status, document count, and memory usage"""
     if rag_system:
@@ -148,7 +72,6 @@ def get_status():
 
 
 @app.route('/api/usage', methods=['GET'])
-@rate_limit("30 per minute")
 def get_api_usage():
     """Get API usage statistics"""
     if not rag_system or not rag_system.llm:
@@ -171,8 +94,6 @@ def get_api_usage():
 
 
 @app.route('/api/usage/reset', methods=['POST'])
-@require_api_key
-@rate_limit("5 per minute")
 def reset_api_usage():
     """Reset API usage statistics"""
     if not rag_system or not rag_system.llm:
@@ -186,7 +107,6 @@ def reset_api_usage():
 
 
 @app.route('/api/documents', methods=['GET'])
-@rate_limit("60 per minute")
 def get_documents():
     """Get list of indexed documents with character counts (excludes authority docs)"""
     if not rag_system:
@@ -207,7 +127,6 @@ def get_documents():
 
 
 @app.route('/api/maharera', methods=['GET'])
-@rate_limit("60 per minute")
 def get_maharera_documents():
     """Get list of indexed MahaRERA/authority documents"""
     if not rag_system:
@@ -236,8 +155,6 @@ def get_maharera_documents():
 
 
 @app.route('/api/maharera/update', methods=['POST'])
-@require_api_key
-@rate_limit("2 per hour")
 def update_maharera():
     """Trigger MahaRERA scraper to fetch new compliance documents"""
     try:
@@ -404,8 +321,6 @@ def delete_all_maharera():
 
 
 @app.route('/api/reindex', methods=['POST'])
-@require_api_key
-@rate_limit("5 per hour")
 def reindex():
     """Trigger auto-indexing of new documents"""
     try:
@@ -458,7 +373,6 @@ def reindex():
 
 
 @app.route('/api/query', methods=['POST'])
-@rate_limit("30 per minute")
 def query():
     """Process a query and return answer with sources"""
     if not rag_system:
@@ -516,7 +430,6 @@ def query():
 
 
 @app.route('/api/batch-process', methods=['POST'])
-@rate_limit("10 per minute")
 def batch_process():
     """Process multiple documents for compliance in batch"""
     if not rag_system:
@@ -813,41 +726,10 @@ def api_info():
     })
 
 
-def create_app():
-    """Application factory for production WSGI servers (gunicorn/uwsgi)"""
-    # Auto-index new documents
-    try:
-        from auto_indexer import auto_index_on_startup
-        auto_index_on_startup()
-    except Exception as e:
-        print(f"WARNING: Auto-indexing skipped: {str(e)}")
-    
-    # Initialize RAG system
-    initialize_rag()
-    return app
-
-
 if __name__ == '__main__':
     print("="*70)
     print("Starting Real Estate RAG API Server")
     print("="*70)
-    
-    # Production mode check
-    PRODUCTION = os.environ.get('PRODUCTION', '').lower() in ('true', '1', 'yes')
-    
-    if PRODUCTION:
-        print("\n[PRODUCTION MODE]")
-        print("WARNING: Use gunicorn for production, not Flask dev server!")
-        print("Run: gunicorn -w 4 -b 0.0.0.0:5000 api_server:app")
-        print("Or with HTTPS: gunicorn -w 4 -b 0.0.0.0:443 --certfile=cert.pem --keyfile=key.pem api_server:app")
-    else:
-        print("\n[DEVELOPMENT MODE]")
-        print("Set PRODUCTION=true for production warnings")
-    
-    # Security status
-    print(f"\nSecurity Status:")
-    print(f"   Rate Limiting: {'ENABLED' if RATE_LIMITING_ENABLED else 'DISABLED'}")
-    print(f"   API Auth: {'ENABLED' if API_AUTH_ENABLED else 'DISABLED'}")
     
     # Auto-index new documents on startup
     print("\nChecking for new documents to index...")
@@ -861,13 +743,10 @@ if __name__ == '__main__':
     print("\nLoading RAG system...")
     initialize_rag()
     
-    HOST = os.environ.get('HOST', '0.0.0.0')
-    PORT = int(os.environ.get('PORT', 5000))
-    
-    print(f"\nServer starting on http://{HOST}:{PORT}")
-    print(f"API docs: http://localhost:{PORT}/api")
-    print(f"Web UI: http://localhost:{PORT}")
+    print("\nServer starting on http://localhost:5000")
+    print("API docs: http://localhost:5000/api")
+    print("Web UI: http://localhost:5000")
     print("="*70 + "\n")
     
-    # Run Flask server (debug=False for production)
-    app.run(host=HOST, port=PORT, debug=False)
+    # Run Flask server (debug=False to prevent auto-restart during long OCR operations)
+    app.run(host='0.0.0.0', port=5000, debug=False)

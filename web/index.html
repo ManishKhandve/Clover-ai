@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloverAI | Intelligent Real Estate Assistant</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-logo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </div>
+                    <span class="brand-name">CloverAI</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- User Documents Section -->
+                <div class="nav-section">
+                    <div class="nav-section-header">
+                        <span class="section-title">Documents</span>
+                        <div class="nav-actions">
+                            <button class="icon-btn" id="loadDocsBtn" title="Refresh Documents">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 2v6h-6"></path>
+                                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                                    <path d="M3 22v-6h6"></path>
+                                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-controls">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="selectAllUserDocs">
+                            <span class="checkbox-label">Select All</span>
+                        </label>
+                    </div>
+
+                    <div id="documentList" class="file-list">
+                        <div class="empty-state-small">No documents loaded</div>
+                    </div>
+                    
+                    <div class="nav-hint">
+                        Place PDFs in <code>documents/</code> folder
+                    </div>
+                </div>
+
+                <!-- Compliance Section -->
+                <div class="nav-section">
+                    <div class="nav-section-header">
+                        <span class="section-title">Compliance</span>
+                        <div class="nav-actions">
+                             <button class="icon-btn danger" id="deleteMahareraBtn" title="Clear Regulations">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="compliance-actions">
+                        <button class="btn btn-sm btn-outline" id="checkComplianceBtn" disabled>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"></path>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                            Check
+                        </button>
+                        <button class="btn btn-sm btn-outline" id="batchProcessBtn" disabled>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            Batch
+                        </button>
+                    </div>
+
+                    <div class="nav-controls mt-2">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="selectAllMaharera">
+                            <span class="checkbox-label">Select All</span>
+                        </label>
+                    </div>
+
+                    <div id="mahareraList" class="file-list">
+                        <div class="empty-state-small">No regulations loaded</div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div class="nav-section mt-auto">
+                    <div class="nav-section-header">
+                        <span class="section-title">Configuration</span>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="form-group">
+                            <label for="languageSelect">Output Language</label>
+                            <select id="languageSelect" class="form-select">
+                                <option value="auto">Auto Detect</option>
+                                <option value="english">English</option>
+                                <option value="marathi">Marathi</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="topKInput">Context Depth</label>
+                            <input type="number" id="topKInput" class="form-input" min="1" max="10" value="3">
+                        </div>
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="showSourcesCheck" checked>
+                            <span class="checkbox-label">Show Citations</span>
+                        </label>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="app-main">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="status-badge" id="appStatus">
+                    <span class="status-dot" id="statusIndicator"></span>
+                    <span class="status-text" id="statusText">Connecting...</span>
+                </div>
+
+                <div class="api-usage-trigger" id="apiUsagePanel">
+                    <div class="usage-mini-stat">
+                        <span class="label">API Calls</span>
+                        <span class="value" id="apiCallCount">0</span>
+                    </div>
+                    <div class="usage-divider"></div>
+                    <div class="usage-mini-stat">
+                        <span class="label">Tokens</span>
+                        <span class="value" id="apiTokenCount">0</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Chat Interface -->
+            <div class="chat-viewport">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="welcome-screen">
+                        <div class="welcome-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </div>
+                        <h1>Welcome to CloverAI</h1>
+                        <p class="subtitle">Your intelligent assistant for real estate compliance and document analysis.</p>
+                        
+                        <div class="quick-starts">
+                            <p class="quick-start-label">Try asking...</p>
+                            <div class="suggestion-chips">
+                                <button class="chip sample-btn" data-question="What is the property address?">Property Address</button>
+                                <button class="chip sample-btn" data-question="What is the total sale price?">Sale Price</button>
+                                <button class="chip sample-btn" data-question="When is the possession date?">Possession Date</button>
+                                <button class="chip sample-btn" data-question="What are the payment terms?">Payment Terms</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Ask a question about your documents..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn" title="Send Message">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span>Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for new line</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-backdrop" id="apiUsageModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>System Performance</h3>
+                <button class="modal-close-btn" id="closeUsageModal">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Requests</span>
+                        <span class="stat-value" id="modalTotalRequests">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Success Rate</span>
+                        <span class="stat-value text-success" id="modalSuccessRequests">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Input Tokens</span>
+                        <span class="stat-value" id="modalInputTokens">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Output Tokens</span>
+                        <span class="stat-value" id="modalOutputTokens">0</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-outline" id="resetUsageBtn">Reset Stats</button>
+                    <button class="btn btn-primary" id="refreshUsageBtn">Refresh Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="batchModal">
+        <div class="modal-card modal-lg">
+             <div class="modal-header">
+                <h3>Batch Compliance Analysis</h3>
+                <button class="modal-close-btn" id="closeBatchModal">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Select documents to analyze against active regulations.</p>
+                
+                <div class="batch-selection-area">
+                    <div id="batchDocList" class="batch-list"></div>
+                </div>
+
+                <div class="batch-options-grid">
+                     <label class="checkbox-wrapper">
+                        <input type="checkbox" id="batchRedFlags" checked>
+                        <span class="checkbox-label">Detect Red Flags</span>
+                    </label>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="batchCompliance" checked>
+                        <span class="checkbox-label">Verify Clauses</span>
+                    </label>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="batchGeneratePdf" checked>
+                        <span class="checkbox-label">Generate PDF Report</span>
+                    </label>
+                </div>
+
+                <div class="progress-area" id="batchProgress" style="display: none;">
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="batchProgressFill"></div>
+                    </div>
+                    <span class="progress-status" id="batchProgressText">Initializing...</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" id="cancelBatchBtn">Cancel</button>
+                <button class="btn btn-primary" id="startBatchBtn">Start Processing</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

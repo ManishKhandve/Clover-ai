@@ -13,7 +13,7 @@
     "top_k": 5
   },
   "llm_settings": {
-    "gemini_api_key": "AIzaSyDL1Jtci_Wq7AT9fRjq89mS6ZPPoe_WhDs",
+    "gemini_api_key": "AIzaSyD5Nj-R_-Jmo2I-9bLP_tgpFy9omuVdwPI",
     "model": "gemini-2.5-flash",
     "temperature": 0.3,
     "max_tokens": 500
