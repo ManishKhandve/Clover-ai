@@ -1,6 +1,7 @@
 CloverAI Real Estate Compliance Assistant
 This project helps real estate companies check their agreements for compliance with MahaRERA regulations using AI and rule-based analysis.
 Used txtai for the main working.
+with Paddle ocr.
 
 Features
 Upload and analyze real estate agreements (PDF)
