@@ -27,3 +27,6 @@ Usage
 Select your agreement(s) and MahaRERA docs in the web UI.
 Click "Check Compliance" or "Batch Process".
 View results and download reports.
+
+
+Can be used easily by non-tech people.
